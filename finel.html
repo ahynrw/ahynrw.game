@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lemon Game</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      overflow: hidden;
+      background-color: #e5f7e1; /* Light green */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #3e4723;
+      flex-direction: column;
+    }
+
+    header {
+      font-size: 2.5rem;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, 0);
+      width: 100%;
+      background-color: #e5f7e1; /* اختياري لتوضيح منطقة الرأس */
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .score {
+      margin-left: 15px; /* مسافة بين النصوص */
+      background: #6b8e23;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 1.2rem;
+    }
+
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('image.png'); /* تحديث مسار الصورة */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: -1;
+    }
+
+    .start-button {
+      position: absolute;
+      background-color: #8fbc8f;
+      color: white;
+      font-size: 1.2rem;
+      padding: 15px 30px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .start-button:hover {
+      background-color: #6b8e23;
+    }
+
+    .message {
+      font-size: 1.2rem;
+      text-align: center;
+      color: #3e4723;
+      margin-top: 10px;
+    }
+
+    .lemon {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: url('https://i.ibb.co/jkhS4C2/Round-Lemon-Slice-Png-Free-PNG-Images-ID-51269-Top-PNG-removebg-preview.png') no-repeat center;
+      background-size: cover;
+      cursor: pointer;
+      display: none;
+    }
+
+    .win-message {
+      font-size: 1.5rem;
+      text-align: center;
+      color: #3e4723;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .reward-button {
+      background-color: #8fbc8f;
+      color: white;
+      padding: 15px 30px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: block;
+      margin-top: 10px;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .reward-button:hover {
+      background-color: #6b8e23;
+      transform: scale(1.05);
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #messageBox {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      color: #3e4723;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      text-align: center;
+      display: none; /* افتراضيًا مخفي */
+    }
+
+    #closeButton {
+      margin-top: 10px;
+      background-color: #8fbc8f;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <header>
+      <div class="header-container">
+        <h1>اجمع الليمون 🍋</h1>
+        <div class="score">الليمونات: 0</div>
+      </div>
+    </header>
+
+    <div class="background"></div>
+
+    <button class="start-button" onclick="startGame()">
+      <div>ابدأ اللعبة</div>
+      <div class="message" id="message"></div>
+    </button>
+
+    <div class="win-message" id="winMessage">
+      <p>مبارك لقد فزت معنا</p>
+      <button id="rewardButton" class="reward-button" onclick="showRewardMessage()">احصل على جائزتك</button>
+    </div>
+
+    <div class="lemon"></div>
+  </div>
+
+  <!-- صندوق الرسالة -->
+  <div id="messageBox">
+    <p id="messageContent">
+      ليموني، أرجو أن تكون قد استمتعتَ بلعبتنا الصغيرة، لقد جمعت 22 ليمونة ويال الصدفة! أنتَ أصبحتَ بالثانية والعشرين الآن، 
+      فخور بك، أنت تبلي بلاءً حسنًا، وأنا أحبك، مع خالص حبي، أخوك الصغير آهين.
+    </p>
+    <button id="closeButton" onclick="hideRewardMessage()">إغلاق</button>
+  </div>
+
+  <script>
+    let score = 0;
+    let moveCount = 0;
+    let lemonPosition = { x: 0, y: 0 };
+
+    function startGame() {
+      const button = document.querySelector(".start-button");
+      const message = document.getElementById("message");
+
+      if (moveCount < 4) {
+        moveCount++;
+        button.style.top = `${Math.random() * (window.innerHeight - 100)}px`;
+        button.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+        message.textContent = moveCount === 1
+          ? "هيا ما بك لنبدأ اللعبة"
+          : "أنا هنا أين تضغط أنت";
+      } else {
+        message.style.display = "block";
+        startLemonGame();
+      }
+    }
+
+    function startLemonGame() {
+      const lemon = document.querySelector(".lemon");
+      lemon.style.display = "block";
+      lemonPosition = {
+        x: Math.random() * (window.innerWidth - 50),
+        y: Math.random() * (window.innerHeight - 50),
+      };
+      lemon.style.left = `${lemonPosition.x}px`;
+      lemon.style.top = `${lemonPosition.y}px`;
+
+      document.querySelector(".start-button").style.display = "none";
+
+      lemon.addEventListener("click", () => {
+        score++;
+        document.querySelector(".score").textContent = `الليمونات: ${score}`;
+        if (score === 22) {
+          lemon.style.display = "none";
+          document.getElementById("winMessage").style.display = "block";
+        } else {
+          lemonPosition = {
+            x: Math.random() * (window.innerWidth - 50),
+            y: Math.random() * (window.innerHeight - 50),
+          };
+          lemon.style.left = `${lemonPosition.x}px`;
+          lemon.style.top = `${lemonPosition.y}px`;
+        }
+      });
+    }
+
+    function showRewardMessage() {
+      document.getElementById("messageBox").style.display = "block";
+    }
+
+    function hideRewardMessage() {
+      document.getElementById("messageBox").style.display = "none";
+    }
+  </script>
+</body>
+</html>
